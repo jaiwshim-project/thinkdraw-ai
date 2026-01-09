@@ -8,10 +8,10 @@ import { StepIndicator } from './components/StepIndicator';
 import { NavigationButtons } from './components/NavigationButtons';
 import { Step1Topic } from './components/Step1Topic';
 import { Step2Audience } from './components/Step2Audience';
+import { Step3PromptRefine } from './components/Step3PromptRefine';
 import { Step3Style } from './components/Step3Style';
 import { Step4Tool } from './components/Step4Tool';
 import { Step5Size } from './components/Step5Size';
-import { Step6PromptRefine } from './components/Step6PromptRefine';
 import { Step6Language } from './components/Step6Language';
 import { Step7Decoration } from './components/Step7Decoration';
 import { Step8Result } from './components/Step8Result';
@@ -66,9 +66,17 @@ export default function CreatePage() {
     }
   }, []); // 빈 배열로 한 번만 실행
 
-  // Step 6 이하로 돌아가면 생성된 콘텐츠 초기화 (스타일이나 사이즈 변경 가능성)
+  // Step 3 이하로 돌아가면 refinedPrompt 초기화 (주제/청중 변경 가능성)
   useEffect(() => {
-    if (currentStep <= 6) {
+    if (currentStep < 3) {
+      console.log('Returned to step', currentStep, '- resetting refined prompt');
+      setRefinedPrompt('');
+    }
+  }, [currentStep, setRefinedPrompt]);
+
+  // Step 8 이하로 돌아가면 최종 생성 콘텐츠 초기화 (스타일/도구/사이즈 변경 가능성)
+  useEffect(() => {
+    if (currentStep < 9) {
       console.log('Returned to step', currentStep, '- resetting generated content');
       setGeneratedPrompt('');
       setGeneratedImage(null);
@@ -347,6 +355,17 @@ export default function CreatePage() {
           )}
 
           {currentStep === 3 && (
+            <Step3PromptRefine
+              topic={topic}
+              topicDetail={topicDetail}
+              audience={audience}
+              refinedPrompt={refinedPrompt}
+              onPromptChange={setRefinedPrompt}
+              onNext={nextStep}
+            />
+          )}
+
+          {currentStep === 4 && (
             <Step3Style
               style={style}
               onStyleChange={setStyle}
@@ -354,7 +373,7 @@ export default function CreatePage() {
             />
           )}
 
-          {currentStep === 4 && (
+          {currentStep === 5 && (
             <Step4Tool
               tool={tool}
               onToolChange={setTool}
@@ -362,22 +381,10 @@ export default function CreatePage() {
             />
           )}
 
-          {currentStep === 5 && (
+          {currentStep === 6 && (
             <Step5Size
               size={size}
               onSizeChange={setSize}
-              onNext={nextStep}
-            />
-          )}
-
-          {currentStep === 6 && (
-            <Step6PromptRefine
-              topic={topic}
-              topicDetail={topicDetail}
-              audienceType={audience?.type || 'age'}
-              audienceValue={audience?.value || '일반'}
-              refinedPrompt={refinedPrompt}
-              onPromptChange={setRefinedPrompt}
               onNext={nextStep}
             />
           )}

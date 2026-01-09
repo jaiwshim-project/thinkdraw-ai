@@ -264,6 +264,41 @@ export function buildPromptPreview(input: Partial<PromptBuilderInput>): string {
 }
 
 /**
+ * 주제와 청중만으로 초기 프롬프트 생성 (Step 3용)
+ */
+export function buildInitialPrompt(topic: string, topicDetail: string, audience: Audience): string {
+  let prompt = `주제: ${topic}\n`;
+
+  if (topicDetail) {
+    prompt += `상세: ${topicDetail}\n\n`;
+  } else {
+    prompt += '\n';
+  }
+
+  const audienceDesc = getAudienceDescription(audience);
+  prompt += `타겟 청중: ${audienceDesc}\n\n`;
+
+  prompt += `AI가 생성한 풍부한 설명:\n`;
+  prompt += `${topic}는 ${audienceDesc}를 위한 중요한 개념입니다. `;
+
+  if (topicDetail) {
+    prompt += `${topicDetail}\n\n`;
+  } else {
+    prompt += `이 주제는 다양한 관점에서 이해할 수 있으며, 실생활에 직접 적용 가능한 실용적인 지식입니다.\n\n`;
+  }
+
+  prompt += `핵심 포인트:\n`;
+  prompt += `1. 기본 개념과 정의를 명확히 이해\n`;
+  prompt += `2. 실제 적용 사례와 예시 학습\n`;
+  prompt += `3. 단계별 실행 방법 습득\n`;
+  prompt += `4. 예상되는 결과와 효과 파악\n\n`;
+
+  prompt += `이를 통해 ${audienceDesc}는 ${topic}를 효과적으로 활용할 수 있게 됩니다.`;
+
+  return prompt;
+}
+
+/**
  * 영어 프롬프트를 한글로 번역
  */
 export function translatePromptToKorean(input: PromptBuilderInput): string {

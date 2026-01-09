@@ -125,14 +125,14 @@ export const useCreateStore = create<CreateState>((set, get) => ({
         return state.topic.trim().length > 0;
       case 2: // 청중 선택
         return state.audience !== null;
-      case 3: // 스타일 선택
-        return state.style !== null;
-      case 4: // 도구 선택
-        return state.tool !== null;
-      case 5: // 사이즈 선택
-        return state.size !== null;
-      case 6: // 프롬프팅 수정
+      case 3: // 프롬프팅 수정 (3단계로 이동)
         return state.refinedPrompt.trim().length > 0;
+      case 4: // 스타일 선택
+        return state.style !== null;
+      case 5: // 도구 선택
+        return state.tool !== null;
+      case 6: // 사이즈 선택
+        return state.size !== null;
       case 7: // 언어 선택
         return state.language !== null;
       case 8: // 장식 선택
