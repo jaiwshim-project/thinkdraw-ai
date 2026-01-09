@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import type { StyleType, SizeType, Audience, ToolType, LanguageType, DecorationType } from '@/types';
 import { STYLES, TOOLS, SIZES, LANGUAGES, DECORATIONS, AGE_GROUPS, FIELDS } from '@/lib/constants';
+import { translatePromptToKorean } from '@/lib/prompt-builder';
 
 interface Step8ResultProps {
   prompt: string;
@@ -51,6 +52,20 @@ export function Step8Result({
   const sizeName = SIZES.find(s => s.id === size)?.name || '없음';
   const languageName = LANGUAGES.find(l => l.id === language)?.name || '없음';
   const decorationName = DECORATIONS.find(d => d.id === decoration)?.name || '없음';
+
+  // 한글 프롬프트 생성
+  const koreanPrompt = (topic && audience && style && tool && size && language && decoration)
+    ? translatePromptToKorean({
+        topic,
+        topicDetail,
+        audience,
+        style,
+        tool,
+        size,
+        language,
+        decoration,
+      })
+    : '프롬프트를 생성 중입니다...';
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">
@@ -133,18 +148,18 @@ export function Step8Result({
         </CardContent>
       </Card>
 
-      {/* 생성된 프롬프트 */}
+      {/* 생성된 프롬프트 (한글) */}
       <Card>
         <CardHeader>
           <CardTitle>생성된 프롬프트</CardTitle>
           <CardDescription>
-            다음 프롬프트로 이미지가 생성되었습니다
+            다음 지시사항으로 이미지가 생성되었습니다
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <pre className="text-sm text-gray-700 whitespace-pre-wrap font-mono">
-              {prompt || '프롬프트를 생성 중입니다...'}
+          <div className="bg-gradient-to-br from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
+            <pre className="text-sm text-gray-800 whitespace-pre-wrap leading-relaxed">
+              {koreanPrompt}
             </pre>
           </div>
         </CardContent>

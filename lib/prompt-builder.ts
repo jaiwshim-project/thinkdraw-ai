@@ -262,3 +262,96 @@ export function buildPromptPreview(input: Partial<PromptBuilderInput>): string {
 
   return preview;
 }
+
+/**
+ * 영어 프롬프트를 한글로 번역
+ */
+export function translatePromptToKorean(input: PromptBuilderInput): string {
+  const { topic, topicDetail, audience, style, tool, size, language, decoration } = input;
+
+  const styleName = STYLES.find((s) => s.id === style)?.name || '시각화';
+  const toolName = TOOLS.find((t) => t.id === tool)?.name || '필기 도구';
+  const sizeName = SIZES.find((s) => s.id === size)?.name || '16:9';
+  const languageName = LANGUAGES.find((l) => l.id === language)?.name || '한국어';
+  const decorationName = DECORATIONS.find((d) => d.id === decoration)?.name || '장식';
+
+  let koreanPrompt = `📋 주제: ${topic}`;
+
+  if (topicDetail) {
+    koreanPrompt += `\n\n💡 추가 설명:\n${topicDetail}`;
+  }
+
+  koreanPrompt += `\n\n👥 대상 청중: ${getAudienceDescription(audience)}`;
+  koreanPrompt += `\n구체적이고 명확하게 설명하며, 관련된 예시를 제공합니다.`;
+
+  koreanPrompt += `\n\n🎨 시각화 스타일: ${styleName}`;
+
+  // 스타일별 설명
+  const styleDescriptions: Record<StyleType, string> = {
+    sketchnote: '손으로 그린 스케치노트 형식으로 시각화합니다.\n- 깨끗한 흰색 배경 사용\n- 중심 개념을 굵은 아이콘/심볼로 표현\n- 간단한 낙서, 비즈니스 아이콘, 막대 인간, 그래프, 시각적 은유 활용\n- 화살표, 숫자(1,2,3), 연결선으로 흐름 표시\n- 최소한의 텍스트 - 짧은 키워드만 사용',
+    infographic: '구조화된 인포그래픽 레이아웃을 만듭니다.\n- 깔끔하고 전문적인 디자인\n- 텍스트보다 아이콘, 차트, 그래프 우선\n- 그리드 기반 레이아웃\n- 짧은 레이블과 숫자만 사용\n- 색상, 크기, 대비로 핵심 강조',
+    mindmap: '방사형 마인드맵을 만듭니다.\n- 중앙에 핵심 개념(아이콘/심볼)\n- 사방으로 주요 아이디어 분기\n- 색상으로 분기 구분\n- 아이콘, 심볼, 1-2단어 키워드만 사용\n- 연결선으로 관계 표시',
+    conceptmap: '개념 간 관계를 보여주는 개념도를 만듭니다.\n- 개념별 아이콘/심볼 사용\n- 짧은 문구(1-3단어)로 관계 표시\n- 계층과 연결 명확히 표현\n- 개념 유형별 다른 모양 사용',
+    'data-viz': '데이터 시각화 대시보드를 만듭니다.\n- 차트, 그래프, 비교 표 포함\n- 레이더 차트, 막대 그래프, 선 그래프 활용\n- 텍스트가 아닌 시각적 데이터로 표현\n- 색상 코딩과 숫자로 카테고리 구분',
+    framework: '전략적 프레임워크/매트릭스를 만듭니다.\n- 2x2 매트릭스, 비교표, 사분면 다이어그램\n- 짧은 레이블(1-2단어)의 명확한 축\n- 각 사분면에 아이콘/심볼 포함\n- 최소한의 텍스트로 전문적 비즈니스 다이어그램',
+    process: '프로세스 흐름도를 만듭니다.\n- 번호가 매겨진 단계(1,2,3...)로 순차 표시\n- 화살표로 흐름 방향 표시\n- 각 단계별 아이콘/심볼 사용\n- YES/NO 분기가 있는 결정 다이아몬드 포함\n- 최소 텍스트의 가로형/타임라인 레이아웃',
+  };
+
+  koreanPrompt += `\n${styleDescriptions[style]}`;
+
+  koreanPrompt += `\n\n✏️ 필기 도구: ${toolName}`;
+
+  const toolDescriptions: Record<ToolType, string> = {
+    'fountain-pen': '만년필로 우아하고 다양한 선 굵기와 잉크 질감 표현',
+    'fine-liner': '파인라이너 펜으로 일관되고 깔끔한 선과 선명한 디테일',
+    ballpoint: '볼펜으로 캐주얼하고 일상적인 스케치 스타일',
+    pencil: '연필로 부드러운 스케치 느낌과 음영 표현',
+    'colored-pencil': '색연필로 섬세하고 정교한 색상 표현',
+    crayon: '크레용/파스텔로 부드럽고 질감있는 색상 표현',
+    brush: '붓/붓펜으로 역동적이고 서예적인 획',
+    marker: '마커로 굵고 생동감있는 색상과 강조',
+  };
+
+  koreanPrompt += `\n${toolDescriptions[tool]}`;
+  koreanPrompt += `\n청록색(teal), 주황색(orange), 차분한 빨강색(muted red) 마커로 간단한 음영과 강조 표현`;
+
+  koreanPrompt += `\n\n📐 이미지 사이즈: ${sizeName}`;
+
+  const sizeDescriptions: Record<SizeType, string> = {
+    '16:9': '16:9 가로 방향 - 프레젠테이션과 웹 콘텐츠에 최적화된 가로 레이아웃',
+    '9:16': '9:16 세로 방향 - 모바일 콘텐츠와 소셜미디어 스토리에 최적화된 세로 스크롤 레이아웃',
+    '1:1': '1:1 정사각형 - 소셜미디어 게시물에 최적화된 중앙 정렬, 균형잡힌 구성',
+  };
+
+  koreanPrompt += `\n${sizeDescriptions[size]}`;
+
+  koreanPrompt += `\n\n🌐 언어 설정: ${languageName}`;
+  koreanPrompt += `\n최소한의 텍스트 사용 - 시각적 심볼, 아이콘, 일러스트레이션으로 개념 설명`;
+  koreanPrompt += `\n필요한 경우 짧은 영어 키워드(최대 1-3단어)를 명확하고 굵은 글꼴로 표시`;
+  koreanPrompt += `\n화살표, 숫자, 시각적 은유를 긴 텍스트 대신 사용`;
+  koreanPrompt += `\n텍스트에 의존하지 않고 시각적으로 보편적으로 이해 가능하게 제작`;
+
+  koreanPrompt += `\n\n💎 장식 스타일: ${decorationName}`;
+
+  const decorationDescriptions: Record<DecorationType, string> = {
+    jewel: '테두리와 빈 공간을 화려하고 반짝이는 보석으로 장식. 우아하고 고급스러운 장식 요소 추가',
+    crystal: '테두리와 빈 공간을 투명하고 반짝이는 크리스탈로 장식. 가볍고 영롱한 장식 요소 추가',
+    gold: '테두리와 빈 공간을 금색 장식과 액센트로 꾸밈. 고급스럽고 프리미엄한 금색 테마 장식',
+    silver: '테두리와 빈 공간을 은색 장식과 액센트로 꾸밈. 우아하고 세련된 은색 테마 장식',
+  };
+
+  koreanPrompt += `\n${decorationDescriptions[decoration]}`;
+
+  koreanPrompt += `\n\n✨ 품질 요구사항:`;
+  koreanPrompt += `\n• 최소한의 텍스트 (영어로 필수 키워드만)`;
+  koreanPrompt += `\n• 시각적 커뮤니케이션에 집중: 아이콘, 심볼, 일러스트, 은유`;
+  koreanPrompt += `\n• 모든 텍스트는 짧고 굵고 읽기 쉽게 (레이블당 최대 1-3단어)`;
+  koreanPrompt += `\n• 문장 대신 숫자(1,2,3)와 화살표 사용`;
+  koreanPrompt += `\n• 높은 대비와 명료성으로 쉽게 읽을 수 있게`;
+  koreanPrompt += `\n• 텍스트에 의존하지 않고 보편적으로 이해 가능하게`;
+  koreanPrompt += `\n\n시각물은 명확하고 조직적이며 전문적이어야 합니다.`;
+  koreanPrompt += `\n어수선함을 피하고 훌륭한 시각적 계층 구조를 유지합니다.`;
+  koreanPrompt += `\n선명한 디테일의 출판 품질 이미지를 만듭니다.`;
+
+  return koreanPrompt;
+}
