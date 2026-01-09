@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 
 export function Header() {
@@ -30,8 +31,15 @@ export function Header() {
   return (
     <header className="border-b bg-white/80 backdrop-blur-sm shadow-sm sticky top-0 z-50">
       <div className="container mx-auto compact-container flex items-center justify-between">
-        <Link href="/" className="text-2xl font-bold text-gradient hover:scale-105 transition-transform">
-          ThinkDraw AI
+        <Link href="/" className="flex items-center hover:scale-105 transition-transform">
+          <Image
+            src="/thinkdraw-logo.png"
+            alt="ThinkDraw AI"
+            width={200}
+            height={50}
+            priority
+            className="h-10 w-auto"
+          />
         </Link>
         <nav className="flex items-center gap-4 sm:gap-6">
           <Link href="/" className="text-sm font-medium hover:text-primary transition-all hover:scale-105">
