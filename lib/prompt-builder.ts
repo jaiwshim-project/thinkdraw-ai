@@ -264,6 +264,64 @@ export function buildPromptPreview(input: Partial<PromptBuilderInput>): string {
 }
 
 /**
+ * 프롬프트를 3800자 이내로 축약
+ */
+function truncatePrompt(prompt: string, maxLength: number = 3800): string {
+  if (prompt.length <= maxLength) {
+    return prompt;
+  }
+
+  // 3800자를 초과하면 자동으로 축약
+  console.log(`Prompt too long (${prompt.length} chars), truncating to ${maxLength} chars`);
+
+  // 섹션별로 분리
+  const sections = prompt.split('\n\n');
+
+  // 필수 섹션 (주제, 타겟, AI 설명 시작부)은 유지
+  const essentialParts: string[] = [];
+  const optionalParts: string[] = [];
+
+  sections.forEach((section, index) => {
+    if (index <= 2) {
+      // 처음 3개 섹션은 필수 (주제, 타겟, AI 설명)
+      essentialParts.push(section);
+    } else {
+      optionalParts.push(section);
+    }
+  });
+
+  let result = essentialParts.join('\n\n');
+
+  // 남은 공간 계산
+  const remaining = maxLength - result.length - 50; // 50자는 마무리 문장용 여유
+
+  if (remaining > 0 && optionalParts.length > 0) {
+    // 남은 공간에 맞춰 추가 내용 포함
+    let additionalContent = '';
+
+    for (const part of optionalParts) {
+      if (additionalContent.length + part.length + 2 <= remaining) {
+        additionalContent += (additionalContent ? '\n\n' : '') + part;
+      } else {
+        break;
+      }
+    }
+
+    if (additionalContent) {
+      result += '\n\n' + additionalContent;
+    }
+  }
+
+  // 최종 길이 확인 및 잘라내기
+  if (result.length > maxLength) {
+    result = result.substring(0, maxLength - 50) + '\n\n...(자동 축약됨)';
+  }
+
+  console.log(`Truncated prompt: ${result.length} chars`);
+  return result;
+}
+
+/**
  * 주제와 청중만으로 초기 프롬프트 생성 (Step 3용)
  */
 export function buildInitialPrompt(topic: string, topicDetail: string, audience: Audience): string {
@@ -295,7 +353,8 @@ export function buildInitialPrompt(topic: string, topicDetail: string, audience:
 
   prompt += `이를 통해 ${audienceDesc}는 ${topic}를 효과적으로 활용할 수 있게 됩니다.`;
 
-  return prompt;
+  // 3800자를 초과하면 자동으로 축약
+  return truncatePrompt(prompt);
 }
 
 /**

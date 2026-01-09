@@ -108,6 +108,7 @@ export function Step3PromptRefine({
               <Textarea
                 value={refinedPrompt}
                 onChange={(e) => onPromptChange(e.target.value)}
+                maxLength={MAX_PROMPT_LENGTH}
                 rows={12}
                 className={`text-sm focus:ring-2 transition-shadow font-mono ${
                   isOverLimit ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
@@ -121,20 +122,19 @@ export function Step3PromptRefine({
                   💡 내용을 자유롭게 수정하거나 추가 정보를 입력하세요. 이 내용은 최종 이미지 생성에 반영됩니다.
                 </p>
                 <div className={`font-medium ${
-                  isOverLimit ? 'text-red-600' : remaining < 200 ? 'text-orange-600' : 'text-gray-600'
+                  remaining < 200 ? 'text-orange-600' : 'text-gray-600'
                 }`}>
                   {currentLength.toLocaleString()} / {MAX_PROMPT_LENGTH.toLocaleString()}자
-                  {isOverLimit && <span className="ml-1">({Math.abs(remaining)}자 초과)</span>}
                 </div>
               </div>
 
-              {/* 길이 초과 경고 */}
-              {isOverLimit && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                  <p className="text-sm font-semibold text-red-900 mb-1">⚠️ 프롬프트가 너무 깁니다</p>
-                  <p className="text-xs text-red-800">
-                    프롬프트는 {MAX_PROMPT_LENGTH.toLocaleString()}자를 초과할 수 없습니다.
-                    현재 {Math.abs(remaining)}자를 줄여주세요.
+              {/* 자동 축약 안내 */}
+              {refinedPrompt.includes('...(자동 축약됨)') && (
+                <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                  <p className="text-sm font-semibold text-blue-900 mb-1">ℹ️ 자동 축약됨</p>
+                  <p className="text-xs text-blue-800">
+                    생성된 프롬프트가 {MAX_PROMPT_LENGTH.toLocaleString()}자를 초과하여 자동으로 축약되었습니다.
+                    필요한 경우 내용을 직접 수정하실 수 있습니다.
                   </p>
                 </div>
               )}
@@ -159,13 +159,9 @@ export function Step3PromptRefine({
               onClick={handleUseAsIs}
               className="btn-gradient flex-1"
               size="lg"
-              disabled={!refinedPrompt || isGenerating || isOverLimit}
+              disabled={!refinedPrompt || isGenerating}
             >
-              {isOverLimit
-                ? `❌ 글자수 초과 (${Math.abs(remaining)}자 줄이기)`
-                : refinedPrompt
-                  ? '✓ 이 내용으로 진행'
-                  : '내용을 입력해주세요'}
+              {refinedPrompt ? '✓ 이 내용으로 진행' : '내용을 입력해주세요'}
             </Button>
           </div>
         </CardContent>
