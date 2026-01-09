@@ -32,7 +32,7 @@ interface CreateState {
   setLanguage: (language: LanguageType) => void;
   setDecoration: (decoration: DecorationType) => void;
   setGeneratedPrompt: (prompt: string) => void;
-  setGeneratedImage: (image: string) => void;
+  setGeneratedImage: (image: string | null) => void;
 
   // 단계 이동
   nextStep: () => void;
