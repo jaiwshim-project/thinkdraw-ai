@@ -16,6 +16,8 @@ interface Step3PromptRefineProps {
   onNext: () => void;
 }
 
+const MAX_PROMPT_LENGTH = 3800;
+
 export function Step3PromptRefine({
   topic,
   topicDetail,
@@ -26,6 +28,10 @@ export function Step3PromptRefine({
 }: Step3PromptRefineProps) {
   const [isGenerating, setIsGenerating] = useState(false);
   const [aiGeneratedPrompt, setAiGeneratedPrompt] = useState('');
+
+  const currentLength = refinedPrompt.length;
+  const isOverLimit = currentLength > MAX_PROMPT_LENGTH;
+  const remaining = MAX_PROMPT_LENGTH - currentLength;
 
   useEffect(() => {
     // Step 3에 처음 도착하면 AI 프롬프트 자동 생성 (주제 + 청중만 사용)
@@ -103,12 +109,35 @@ export function Step3PromptRefine({
                 value={refinedPrompt}
                 onChange={(e) => onPromptChange(e.target.value)}
                 rows={12}
-                className="text-sm focus:ring-2 focus:ring-blue-500 transition-shadow font-mono"
+                className={`text-sm focus:ring-2 transition-shadow font-mono ${
+                  isOverLimit ? 'border-red-500 focus:ring-red-500' : 'focus:ring-blue-500'
+                }`}
                 placeholder="AI가 생성한 설명이 여기에 표시됩니다..."
               />
-              <p className="text-xs text-gray-500">
-                💡 내용을 자유롭게 수정하거나 추가 정보를 입력하세요. 이 내용은 최종 이미지 생성에 반영됩니다.
-              </p>
+
+              {/* 글자수 표시 */}
+              <div className="flex items-center justify-between text-xs">
+                <p className="text-gray-500">
+                  💡 내용을 자유롭게 수정하거나 추가 정보를 입력하세요. 이 내용은 최종 이미지 생성에 반영됩니다.
+                </p>
+                <div className={`font-medium ${
+                  isOverLimit ? 'text-red-600' : remaining < 200 ? 'text-orange-600' : 'text-gray-600'
+                }`}>
+                  {currentLength.toLocaleString()} / {MAX_PROMPT_LENGTH.toLocaleString()}자
+                  {isOverLimit && <span className="ml-1">({Math.abs(remaining)}자 초과)</span>}
+                </div>
+              </div>
+
+              {/* 길이 초과 경고 */}
+              {isOverLimit && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                  <p className="text-sm font-semibold text-red-900 mb-1">⚠️ 프롬프트가 너무 깁니다</p>
+                  <p className="text-xs text-red-800">
+                    프롬프트는 {MAX_PROMPT_LENGTH.toLocaleString()}자를 초과할 수 없습니다.
+                    현재 {Math.abs(remaining)}자를 줄여주세요.
+                  </p>
+                </div>
+              )}
             </div>
           )}
 
@@ -120,6 +149,7 @@ export function Step3PromptRefine({
               <li>텍스트를 직접 수정하여 원하는 내용으로 변경</li>
               <li>추가하고 싶은 정보나 지시사항 입력</li>
               <li>구체적인 예시나 세부 설명 추가 가능</li>
+              <li className="font-semibold text-yellow-900">최대 {MAX_PROMPT_LENGTH.toLocaleString()}자까지 작성 가능</li>
             </ul>
           </div>
 
@@ -129,9 +159,13 @@ export function Step3PromptRefine({
               onClick={handleUseAsIs}
               className="btn-gradient flex-1"
               size="lg"
-              disabled={!refinedPrompt || isGenerating}
+              disabled={!refinedPrompt || isGenerating || isOverLimit}
             >
-              {refinedPrompt ? '✓ 이 내용으로 진행' : '내용을 입력해주세요'}
+              {isOverLimit
+                ? `❌ 글자수 초과 (${Math.abs(remaining)}자 줄이기)`
+                : refinedPrompt
+                  ? '✓ 이 내용으로 진행'
+                  : '내용을 입력해주세요'}
             </Button>
           </div>
         </CardContent>
