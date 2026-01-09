@@ -34,7 +34,7 @@ export type SizeType = '16:9' | '9:16' | '1:1';
 export type LanguageType = 'korean' | 'english' | 'japanese' | 'chinese';
 
 // 장식 타입
-export type DecorationType = 'jewel' | 'crystal' | 'gold' | 'silver';
+export type DecorationType = 'jewel' | 'crystal' | 'gold' | 'silver' | 'animal-sticker' | 'flower' | 'fruit' | 'dinosaur';
 
 // 선택 옵션 인터페이스
 export interface SelectOption {

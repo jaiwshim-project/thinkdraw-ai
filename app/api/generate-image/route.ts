@@ -47,6 +47,20 @@ export async function POST(request: NextRequest) {
 
     // OpenAI DALL-E 3 처리
     if (provider === 'openai') {
+      // ⚠️ 이미지 생성 기능 일시 중단 - DALL-E API 호출 주석 처리
+      console.log('⚠️ 이미지 생성 기능이 일시 중단되었습니다. Mock 이미지를 반환합니다.');
+
+      // Mock 이미지 URL 반환 (실제 API 호출 없음)
+      return NextResponse.json({
+        success: true,
+        imageUrl: '/sample-image.png', // Mock 이미지
+        revisedPrompt: '이미지 생성 기능이 일시 중단되었습니다.',
+      });
+
+      /*
+      // 실제 DALL-E API 호출 (현재 비활성화)
+      // 다시 활성화하려면 위의 return 문을 주석 처리하고 아래 코드의 주석을 해제하세요
+
       // API 키 형식 검증
       if (!apiKey.startsWith('sk-')) {
         return NextResponse.json(
@@ -96,6 +110,7 @@ export async function POST(request: NextRequest) {
         imageUrl: imageUrl,
         revisedPrompt: response.data[0]?.revised_prompt,
       });
+      */
     }
 
     // 지원하지 않는 제공자

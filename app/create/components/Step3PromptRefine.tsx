@@ -16,7 +16,7 @@ interface Step3PromptRefineProps {
   onNext: () => void;
 }
 
-const MAX_PROMPT_LENGTH = 3800;
+const MAX_PROMPT_LENGTH = 1500; // Step 3 제한 (최종 프롬프트는 이것 + 스타일 등 지시사항 = 약 4000자)
 
 export function Step3PromptRefine({
   topic,
@@ -128,12 +128,12 @@ export function Step3PromptRefine({
                 </div>
               </div>
 
-              {/* 자동 축약 안내 */}
-              {refinedPrompt.includes('...(자동 축약됨)') && (
+              {/* 자동 요약 안내 */}
+              {(refinedPrompt.includes('핵심 내용을 요약했습니다') || refinedPrompt.length >= MAX_PROMPT_LENGTH - 100) && (
                 <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                  <p className="text-sm font-semibold text-blue-900 mb-1">ℹ️ 자동 축약됨</p>
+                  <p className="text-sm font-semibold text-blue-900 mb-1">✨ 자동 요약됨</p>
                   <p className="text-xs text-blue-800">
-                    생성된 프롬프트가 {MAX_PROMPT_LENGTH.toLocaleString()}자를 초과하여 자동으로 축약되었습니다.
+                    생성된 프롬프트가 {MAX_PROMPT_LENGTH.toLocaleString()}자를 초과하여 자동으로 요약하고 정리했습니다.
                     필요한 경우 내용을 직접 수정하실 수 있습니다.
                   </p>
                 </div>

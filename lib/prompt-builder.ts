@@ -166,6 +166,10 @@ function getDecorationInstructions(decoration: DecorationType): string {
     crystal: 'Decorate borders and empty spaces with transparent, shimmering crystals. Add light, ethereal decorative elements.',
     gold: 'Decorate borders and empty spaces with golden ornaments and accents. Add luxurious, premium gold-themed decorative elements.',
     silver: 'Decorate borders and empty spaces with silver ornaments and accents. Add elegant, sophisticated silver-themed decorative elements.',
+    'animal-sticker': 'Decorate borders and empty spaces with cute, friendly animal stickers (bears, cats, dogs, rabbits, birds, etc.). Add playful, cheerful decorative elements with adorable animal characters.',
+    flower: 'Decorate borders and empty spaces with beautiful flowers and wildflowers (roses, daisies, cherry blossoms, lavender, etc.). Add natural, elegant floral decorative elements with soft colors.',
+    fruit: 'Decorate borders and empty spaces with colorful, fresh fruits (apples, strawberries, oranges, watermelons, grapes, bananas, etc.). Add vibrant, healthy decorative elements with delicious-looking fruits.',
+    dinosaur: 'Use cute dinosaur illustrations as ICONS for each concept/step (T-Rex, Triceratops, Stegosaurus, Brachiosaurus, Pterodactyl, etc.). Each section or box should have a small dinosaur icon next to it. The dinosaurs should be simple, friendly, hand-drawn style that complements the educational content, not just decorative borders. Make it look like a teaching material with dinosaur icons helping explain concepts.',
   };
 
   return instructions[decoration] || instructions.jewel;
@@ -220,7 +224,85 @@ export function buildPrompt(input: PromptBuilderInput): string {
   prompt += `\nAvoid clutter and maintain excellent visual hierarchy.`;
   prompt += `\nCreate a publication-quality image with crisp details.`;
 
-  return prompt.trim();
+  // 10. DALL-E API는 최대 4000자 제한 - 초과시 지능적으로 요약
+  let finalPrompt = prompt.trim();
+
+  if (finalPrompt.length > 4000) {
+    console.log(`⚠️ Final prompt too long (${finalPrompt.length} chars), summarizing to 4000 chars for DALL-E API`);
+
+    // 전략: 스타일/도구/사이즈/언어/장식/DALL-E 최적화 지시사항은 유지하고,
+    // 앞부분의 주제 설명을 지능적으로 요약
+
+    const instructionsStart = finalPrompt.indexOf('\n\n' + getStyleInstructions(style));
+
+    if (instructionsStart > 0) {
+      // 앞부분(주제 설명)과 뒷부분(스타일 지시사항)을 분리
+      let topicSection = finalPrompt.substring(0, instructionsStart);
+      const instructionsSection = finalPrompt.substring(instructionsStart);
+
+      // 지시사항 섹션의 길이
+      const instructionsLength = instructionsSection.length;
+
+      // 주제 섹션에 할당 가능한 최대 길이
+      const maxTopicLength = 4000 - instructionsLength - 100; // 100자 여유
+
+      if (maxTopicLength > 0 && topicSection.length > maxTopicLength) {
+        // 주제 섹션을 지능적으로 요약
+        // 1. topicDetail이 있다면 먼저 축약
+        if (topicDetail && topicDetail.length > 100) {
+          const shortDetail = topicDetail.substring(0, 100) + '...';
+          topicSection = topicSection.replace(topicDetail, shortDetail);
+        }
+
+        // 2. 여전히 초과하면 불필요한 문구 제거
+        if (topicSection.length > maxTopicLength) {
+          topicSection = topicSection
+            .replace(/\nBe specific and to the point\./, '')
+            .replace(/\nProvide relevant examples\./, '');
+        }
+
+        // 3. 여전히 초과하면 핵심만 남기고 절삭
+        if (topicSection.length > maxTopicLength) {
+          // 주제와 청중 정보는 유지
+          const lines = topicSection.split('\n');
+          let essentialInfo = '';
+
+          for (const line of lines) {
+            if (line.startsWith('Identify') || line.startsWith('Audience')) {
+              essentialInfo += line + '\n';
+            } else if (line.startsWith('Additional context:') && essentialInfo.length < maxTopicLength - 100) {
+              // Additional context는 짧게만
+              essentialInfo += line.substring(0, 100) + '...\n';
+            }
+          }
+
+          topicSection = essentialInfo.trim();
+        }
+
+        finalPrompt = topicSection + instructionsSection;
+      }
+    } else {
+      // instructionsStart를 찾지 못한 경우
+      // 불필요한 부분 제거 후 절삭
+      finalPrompt = finalPrompt
+        .replace(/\nBe specific and to the point\./g, '')
+        .replace(/\nProvide relevant examples\./g, '');
+
+      if (finalPrompt.length > 4000) {
+        finalPrompt = finalPrompt.substring(0, 3950) + '\n\n(Content summarized to fit DALL-E limit)';
+      }
+    }
+
+    // 최종 확인
+    if (finalPrompt.length > 4000) {
+      finalPrompt = finalPrompt.substring(0, 3950) + '\n\n(Summarized)';
+    }
+
+    console.log(`✅ Summarized to ${finalPrompt.length} chars`);
+  }
+
+  console.log(`📏 Final prompt length: ${finalPrompt.length} chars (DALL-E limit: 4000)`);
+  return finalPrompt;
 }
 
 /**
@@ -264,67 +346,98 @@ export function buildPromptPreview(input: Partial<PromptBuilderInput>): string {
 }
 
 /**
- * 프롬프트를 3800자 이내로 축약
+ * 프롬프트를 1500자에 최대한 가깝게 요약 (목표: 1450~1500자)
+ * 전략: 원본 내용을 최대한 많이 포함하되, 1500자를 넘지 않게 조절
  */
-function truncatePrompt(prompt: string, maxLength: number = 3800): string {
+function summarizePrompt(prompt: string, maxLength: number = 1500): string {
   if (prompt.length <= maxLength) {
     return prompt;
   }
 
-  // 3800자를 초과하면 자동으로 축약
-  console.log(`Prompt too long (${prompt.length} chars), truncating to ${maxLength} chars`);
+  console.log(`📝 Prompt too long (${prompt.length} chars), summarizing to ~${maxLength} chars`);
 
-  // 섹션별로 분리
-  const sections = prompt.split('\n\n');
+  // 목표: 1500자에 가깝게 (1450~1500자)
+  const targetMin = maxLength - 50; // 1450자 이상
+  const targetMax = maxLength; // 1500자 이하
 
-  // 필수 섹션 (주제, 타겟, AI 설명 시작부)은 유지
-  const essentialParts: string[] = [];
-  const optionalParts: string[] = [];
+  // 전체 원본을 일단 그대로 유지
+  let result = prompt;
 
-  sections.forEach((section, index) => {
-    if (index <= 2) {
-      // 처음 3개 섹션은 필수 (주제, 타겟, AI 설명)
-      essentialParts.push(section);
-    } else {
-      optionalParts.push(section);
+  // 1500자를 초과하면 점진적으로 축약
+  if (result.length > targetMax) {
+    // 전략 1: 불필요한 빈 줄 제거
+    result = result.replace(/\n\n\n+/g, '\n\n');
+
+    // 전략 2: 반복되는 문구 제거
+    if (result.length > targetMax) {
+      result = result
+        .replace(/이 주제는 다양한 관점에서 이해할 수 있으며,?\s*/g, '')
+        .replace(/실생활에 직접 적용 가능한 실용적인 지식입니다\.?\s*/g, '');
     }
-  });
 
-  let result = essentialParts.join('\n\n');
+    // 전략 3: 여전히 초과하면 문장 단위로 끝에서부터 제거
+    if (result.length > targetMax) {
+      const sentences = result.split(/\n/);
+      let accumulated = '';
 
-  // 남은 공간 계산
-  const remaining = maxLength - result.length - 50; // 50자는 마무리 문장용 여유
+      // 앞에서부터 문장을 추가하되, targetMax를 넘기 직전까지만
+      for (let i = 0; i < sentences.length; i++) {
+        const testLength = accumulated.length + sentences[i].length + 1;
 
-  if (remaining > 0 && optionalParts.length > 0) {
-    // 남은 공간에 맞춰 추가 내용 포함
-    let additionalContent = '';
-
-    for (const part of optionalParts) {
-      if (additionalContent.length + part.length + 2 <= remaining) {
-        additionalContent += (additionalContent ? '\n\n' : '') + part;
-      } else {
-        break;
+        if (testLength <= targetMax - 50) { // 50자 여유
+          accumulated += (accumulated ? '\n' : '') + sentences[i];
+        } else {
+          // 더 이상 추가할 수 없으면 중단
+          break;
+        }
       }
+
+      result = accumulated;
     }
 
-    if (additionalContent) {
-      result += '\n\n' + additionalContent;
+    // 전략 4: 여전히 초과하면 마지막 문장 제거
+    while (result.length > targetMax) {
+      const lines = result.split('\n');
+      if (lines.length <= 5) break; // 최소 5줄은 유지
+
+      lines.pop(); // 마지막 줄 제거
+      result = lines.join('\n');
+    }
+
+    // 전략 5: 마무리 정리
+    if (!result.endsWith('.') && !result.endsWith('다') && !result.endsWith('니다')) {
+      result += '.';
     }
   }
 
-  // 최종 길이 확인 및 잘라내기
-  if (result.length > maxLength) {
-    result = result.substring(0, maxLength - 50) + '\n\n...(자동 축약됨)';
+  // 목표 길이보다 너무 짧으면 경고
+  if (result.length < targetMin) {
+    console.warn(`⚠️ Warning: Result is too short (${result.length} chars). Target: ${targetMin}-${targetMax} chars`);
   }
 
-  console.log(`Truncated prompt: ${result.length} chars`);
+  const retainedPercent = Math.round(result.length / prompt.length * 100);
+  console.log(`✅ Summarized: ${result.length} chars (from ${prompt.length} chars) - Retained ${retainedPercent}% of content`);
+
+  // 목표 범위 확인
+  if (result.length >= targetMin && result.length <= targetMax) {
+    console.log(`🎯 Perfect! Within target range: ${targetMin}-${targetMax} chars`);
+  } else if (result.length < targetMin) {
+    console.log(`📊 Below target (${result.length} < ${targetMin}). Consider adjusting algorithm.`);
+  }
+
   return result;
 }
 
 /**
  * 주제와 청중만으로 초기 프롬프트 생성 (Step 3용)
+ * 목표: 항상 1450~1500자로 생성 (짧으면 확장, 길면 축약)
  */
 export function buildInitialPrompt(topic: string, topicDetail: string, audience: Audience): string {
+  const audienceDesc = getAudienceDescription(audience);
+  const targetMin = 1450;
+  const targetMax = 1500;
+
+  // 1단계: 기본 프롬프트 생성
   let prompt = `주제: ${topic}\n`;
 
   if (topicDetail) {
@@ -333,7 +446,6 @@ export function buildInitialPrompt(topic: string, topicDetail: string, audience:
     prompt += '\n';
   }
 
-  const audienceDesc = getAudienceDescription(audience);
   prompt += `타겟 청중: ${audienceDesc}\n\n`;
 
   prompt += `AI가 생성한 풍부한 설명:\n`;
@@ -342,19 +454,90 @@ export function buildInitialPrompt(topic: string, topicDetail: string, audience:
   if (topicDetail) {
     prompt += `${topicDetail}\n\n`;
   } else {
-    prompt += `이 주제는 다양한 관점에서 이해할 수 있으며, 실생활에 직접 적용 가능한 실용적인 지식입니다.\n\n`;
+    prompt += `이 주제는 실생활과 업무 현장에서 직접 활용할 수 있는 실용적인 지식입니다.\n\n`;
   }
 
+  // 2단계: 길이 확인 후 확장 또는 축약 결정
+  let currentLength = prompt.length;
+
+  // 핵심 포인트 추가
   prompt += `핵심 포인트:\n`;
   prompt += `1. 기본 개념과 정의를 명확히 이해\n`;
   prompt += `2. 실제 적용 사례와 예시 학습\n`;
   prompt += `3. 단계별 실행 방법 습득\n`;
   prompt += `4. 예상되는 결과와 효과 파악\n\n`;
 
+  currentLength = prompt.length;
+
+  // 3단계: 1450자 미만이면 내용 확장
+  if (currentLength < targetMin) {
+    const needMore = targetMin - currentLength;
+    console.log(`📝 Prompt too short (${currentLength} chars), expanding to ~${targetMin} chars (need ${needMore} more chars)`);
+
+    // 확장 컨텐츠 추가
+    prompt += `${topic}에 대한 심화 이해:\n`;
+    prompt += `이 개념은 ${audienceDesc}가 일상과 전문 분야에서 마주하는 다양한 상황에 적용됩니다. `;
+    prompt += `기본 원리를 이해하면 문제 해결 능력이 향상되고, 더 효과적인 의사결정을 할 수 있습니다.\n\n`;
+
+    currentLength = prompt.length;
+
+    // 여전히 부족하면 추가 설명
+    if (currentLength < targetMin - 200) {
+      prompt += `실제 적용 예시:\n`;
+      prompt += `- 초보자: 기본 개념 학습과 간단한 실습을 통해 ${topic}의 기초를 다집니다.\n`;
+      prompt += `- 중급자: 다양한 사례를 분석하고 자신의 상황에 맞게 응용하는 방법을 익힙니다.\n`;
+      prompt += `- 숙련자: 고급 기법을 활용하여 복잡한 문제를 해결하고 다른 사람을 지도할 수 있습니다.\n\n`;
+
+      currentLength = prompt.length;
+    }
+
+    // 여전히 부족하면 더 추가
+    if (currentLength < targetMin - 200) {
+      prompt += `학습 및 적용 프로세스:\n`;
+      prompt += `첫째, ${topic}의 핵심 개념을 정확히 이해합니다. 이론적 배경과 실무적 의미를 모두 파악하는 것이 중요합니다.\n`;
+      prompt += `둘째, 작은 규모로 시작하여 점진적으로 확장합니다. 실패를 두려워하지 말고 실험을 통해 배웁니다.\n`;
+      prompt += `셋째, 다른 사람의 성공 사례와 실패 경험을 참고하여 자신만의 방법론을 개발합니다.\n`;
+      prompt += `넷째, 지속적인 연습과 피드백을 통해 숙련도를 높이고 전문성을 키워갑니다.\n\n`;
+
+      currentLength = prompt.length;
+    }
+
+    // 여전히 부족하면 혜택 섹션 추가
+    if (currentLength < targetMin - 200) {
+      prompt += `기대 효과와 혜택:\n`;
+      prompt += `${topic}를 제대로 이해하고 활용하면 ${audienceDesc}는 업무 효율성이 크게 향상됩니다. `;
+      prompt += `문제 발생 시 빠르게 원인을 파악하고 해결책을 찾을 수 있으며, 예방적 조치도 가능해집니다. `;
+      prompt += `또한 동료나 팀원들과 협업할 때 명확한 커뮤니케이션이 가능하고, 전문가로서의 신뢰도가 높아집니다. `;
+      prompt += `장기적으로는 경력 개발과 성장에 큰 도움이 되며, 새로운 기회를 창출할 수 있는 역량이 생깁니다.\n\n`;
+
+      currentLength = prompt.length;
+    }
+
+    // 마지막으로 추가 팁
+    if (currentLength < targetMin - 100) {
+      prompt += `실천 팁:\n`;
+      prompt += `- 매일 조금씩이라도 꾸준히 학습하고 적용해보세요.\n`;
+      prompt += `- 동료나 멘토에게 피드백을 요청하여 개선점을 찾으세요.\n`;
+      prompt += `- 온라인 커뮤니티나 스터디 그룹에 참여하여 지식을 공유하세요.\n`;
+      prompt += `- 자신의 학습 과정과 성과를 기록하여 발전 상황을 추적하세요.\n\n`;
+    }
+  }
+
+  // 마무리 문장
   prompt += `이를 통해 ${audienceDesc}는 ${topic}를 효과적으로 활용할 수 있게 됩니다.`;
 
-  // 3800자를 초과하면 자동으로 축약
-  return truncatePrompt(prompt);
+  console.log(`📊 Initial prompt generated: ${prompt.length} chars (target: ${targetMin}-${targetMax})`);
+
+  // 4단계: 1500자를 초과하면 요약
+  if (prompt.length > targetMax) {
+    prompt = summarizePrompt(prompt, targetMax);
+  } else if (prompt.length < targetMin) {
+    console.warn(`⚠️ Still below target: ${prompt.length} < ${targetMin}`);
+  } else {
+    console.log(`🎯 Perfect! Within target range: ${targetMin}-${targetMax} chars`);
+  }
+
+  return prompt;
 }
 
 /**
@@ -432,6 +615,10 @@ export function translatePromptToKorean(input: PromptBuilderInput): string {
     crystal: '테두리와 빈 공간을 투명하고 반짝이는 크리스탈로 장식. 가볍고 영롱한 장식 요소 추가',
     gold: '테두리와 빈 공간을 금색 장식과 액센트로 꾸밈. 고급스럽고 프리미엄한 금색 테마 장식',
     silver: '테두리와 빈 공간을 은색 장식과 액센트로 꾸밈. 우아하고 세련된 은색 테마 장식',
+    'animal-sticker': '테두리와 빈 공간을 귀여운 동물 스티커로 장식. 곰, 고양이, 강아지, 토끼, 새 등 사랑스러운 동물 캐릭터로 장난스럽고 활기찬 장식 요소 추가',
+    flower: '테두리와 빈 공간을 아름다운 꽃과 들꽃으로 장식. 장미, 데이지, 벚꽃, 라벤더 등 부드러운 색상의 자연스럽고 우아한 꽃 장식 요소 추가',
+    fruit: '테두리와 빈 공간을 화려하고 신선한 과일로 장식. 사과, 딸기, 오렌지, 수박, 포도, 바나나 등 맛있어 보이는 과일로 생동감 있고 건강한 장식 요소 추가',
+    dinosaur: '각 개념/단계마다 귀여운 공룡 아이콘 사용. 티라노사우르스, 트리케라톱스, 스테고사우르스, 브라키오사우르스, 프테라노돈 등을 각 박스나 섹션 옆에 작은 아이콘으로 배치. 공룡은 단순하고 친근한 손그림 스타일로 교육 콘텐츠를 돕는 역할. 단순 테두리 장식이 아닌 개념 설명을 돕는 아이콘으로 활용',
   };
 
   koreanPrompt += `\n${decorationDescriptions[decoration]}`;

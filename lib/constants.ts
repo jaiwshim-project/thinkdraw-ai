@@ -6,43 +6,43 @@ export const STYLES: StyleOption[] = [
     id: 'sketchnote',
     name: '비주얼씽킹/스케치노트',
     description: '손글씨, 화살표, 아이콘을 활용한 사고 흐름 표현',
-    example: '/examples/sketchnote.png',
+    example: '/Gemini_Generated_Image_b8efuib8efuib8ef.png',
   },
   {
     id: 'infographic',
     name: '인포그래픽',
     description: '구조화된 정보를 시각적으로 전달',
-    example: '/examples/infographic.png',
+    example: '/Gemini_Generated_Image_jaiq35jaiq35jaiq.png',
   },
   {
     id: 'mindmap',
     name: '마인드맵',
     description: '중앙에서 방사형으로 확장되는 사고 구조',
-    example: '/examples/mindmap.png',
+    example: '/Gemini_Generated_Image_eqjceeeqjceeeqjc.png',
   },
   {
     id: 'conceptmap',
     name: '컨셉맵',
     description: '개념 간의 관계와 연결고리 표현',
-    example: '/examples/conceptmap.png',
+    example: '/Gemini_Generated_Image_jkk81ujkk81ujkk8.png',
   },
   {
     id: 'data-viz',
     name: '데이터 시각화',
     description: '레이더 차트, 그래프, 비교표 등',
-    example: '/examples/data-viz.png',
+    example: '/Gemini_Generated_Image_w8xuidw8xuidw8xu.png',
   },
   {
     id: 'framework',
     name: '프레임워크/매트릭스',
     description: '2x2 매트릭스, 비교 테이블 등 전략적 구조',
-    example: '/examples/framework.png',
+    example: '/Gemini_Generated_Image_w8xuidw8xuidw8xu.png',
   },
   {
     id: 'process',
     name: '프로세스 맵',
     description: '단계별 흐름과 절차 시각화',
-    example: '/examples/process.png',
+    example: '/Gemini_Generated_Image_spte9kspte9kspte.png',
   },
 ];
 
@@ -54,18 +54,21 @@ export const TOOLS: ToolOption[] = [
     name: '만년필',
     description: '고급스러운 질감과 개성 있는 필압',
     category: 'ink',
+    icon: '🖋️',
   },
   {
     id: 'fine-liner',
     name: '파인라이너',
     description: '일정한 선, 선명한 윤곽선',
     category: 'ink',
+    icon: '✒️',
   },
   {
     id: 'ballpoint',
     name: '볼펜/젤펜',
     description: '일상적이고 자연스러운 느낌',
     category: 'ink',
+    icon: '🖊️',
   },
   // 고체 기반
   {
@@ -73,18 +76,21 @@ export const TOOLS: ToolOption[] = [
     name: '연필',
     description: '부드러운 명암과 스케치 느낌',
     category: 'solid',
+    icon: '✏️',
   },
   {
     id: 'colored-pencil',
     name: '색연필',
     description: '정밀한 채색과 세밀한 강조',
     category: 'solid',
+    icon: '🖍️',
   },
   {
     id: 'crayon',
     name: '크레용/파스텔',
     description: '부드러운 질감과 감성적 표현',
     category: 'solid',
+    icon: '🖍️',
   },
   // 예술 도구
   {
@@ -92,12 +98,14 @@ export const TOOLS: ToolOption[] = [
     name: '붓/붓펜',
     description: '역동적인 선과 예술적 감성',
     category: 'artistic',
+    icon: '🖌️',
   },
   {
     id: 'marker',
     name: '마커',
     description: '선명한 색상과 강조 효과',
     category: 'artistic',
+    icon: '🖍️',
   },
 ];
 
@@ -209,5 +217,29 @@ export const DECORATIONS: DecorationOption[] = [
     name: '은',
     description: '우아한 은빛 장식과 테두리',
     icon: '⚪',
+  },
+  {
+    id: 'animal-sticker',
+    name: '귀여운 동물 스티커',
+    description: '귀여운 동물 스티커로 테두리와 공간을 장식',
+    icon: '🐻',
+  },
+  {
+    id: 'flower',
+    name: '예쁜 꽃',
+    description: '예쁜 꽃과 들꽃으로 테두리와 공간을 장식',
+    icon: '🌸',
+  },
+  {
+    id: 'fruit',
+    name: '예쁜 과일',
+    description: '예쁜 과일들로 테두리와 공간을 장식',
+    icon: '🍎',
+  },
+  {
+    id: 'dinosaur',
+    name: '공룡',
+    description: '귀여운 공룡으로 테두리와 공간을 장식',
+    icon: '🦕',
   },
 ];

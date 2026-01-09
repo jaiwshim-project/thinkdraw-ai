@@ -28,37 +28,34 @@ export function Step5Size({ size, onSizeChange, onNext }: Step5SizeProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <div className="grid gap-6">
+          <div className="grid grid-cols-3 gap-2">
             {SIZES.map((sizeOption) => (
               <button
                 key={sizeOption.id}
                 onClick={() => onSizeChange(sizeOption.id)}
                 onDoubleClick={() => handleDoubleClick(sizeOption.id)}
-                className={`p-6 rounded-lg border-2 transition-all text-left ${
+                className={`p-3 rounded-lg border-2 transition-all text-left ${
                   size === sizeOption.id
                     ? 'border-primary bg-primary/5 shadow-lg'
                     : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
                 }`}
               >
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="font-semibold text-lg mb-2">{sizeOption.name}</div>
-                    <p className="text-sm text-gray-600 mb-3">{sizeOption.description}</p>
-                    <div className="flex items-center gap-2 text-sm">
-                      <span className="font-medium text-primary">활용 용도:</span>
-                      <span className="text-gray-600">{sizeOption.use}</span>
-                    </div>
+                <div className="space-y-2">
+                  <div className="font-semibold text-base">{sizeOption.name}</div>
+                  <p className="text-xs text-gray-600">{sizeOption.description}</p>
+                  <div className="text-xs text-gray-500">
+                    <span className="font-medium">용도:</span> {sizeOption.use}
                   </div>
 
                   {/* 비율 시각화 */}
-                  <div className="flex items-center justify-center w-32 h-24 bg-gray-100 rounded-md p-2">
+                  <div className="flex items-center justify-center h-16 bg-gray-100 rounded-md p-1">
                     <div
                       className={`bg-primary/20 border-2 border-primary/50 ${
                         sizeOption.id === '16:9'
-                          ? 'w-full h-16'
+                          ? 'w-full h-10'
                           : sizeOption.id === '9:16'
-                          ? 'w-12 h-full'
-                          : 'w-16 h-16'
+                          ? 'w-8 h-full'
+                          : 'w-12 h-12'
                       }`}
                     />
                   </div>

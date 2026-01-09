@@ -61,19 +61,19 @@ export function Step2Audience({ audience, onAudienceChange, onNext }: Step2Audie
 
           {/* 연령대 선택 */}
           {activeTab === 'age' && (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-2">
               {AGE_GROUPS.map((group) => (
                 <button
                   key={group.id}
                   onClick={() => handleSelect('age', group.id)}
                   onDoubleClick={() => handleDoubleClick('age', group.id)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
+                  className={`p-3 rounded-lg border-2 transition-all ${
                     audience?.type === 'age' && audience?.value === group.id
                       ? 'border-primary bg-primary/5 shadow-sm'
                       : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="text-lg font-semibold">{group.name}</div>
+                  <div className="text-base font-semibold">{group.name}</div>
                 </button>
               ))}
             </div>
@@ -81,19 +81,19 @@ export function Step2Audience({ audience, onAudienceChange, onNext }: Step2Audie
 
           {/* 분야 선택 */}
           {activeTab === 'field' && (
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-4 gap-2">
               {FIELDS.map((field) => (
                 <button
                   key={field.id}
                   onClick={() => handleSelect('field', field.id)}
                   onDoubleClick={() => handleDoubleClick('field', field.id)}
-                  className={`p-4 rounded-lg border-2 transition-all ${
+                  className={`p-3 rounded-lg border-2 transition-all ${
                     audience?.type === 'field' && audience?.value === field.id
                       ? 'border-primary bg-primary/5 shadow-sm'
                       : 'border-gray-200 hover:border-primary/50 hover:bg-gray-50'
                   }`}
                 >
-                  <div className="text-lg font-semibold">{field.name}</div>
+                  <div className="text-base font-semibold">{field.name}</div>
                 </button>
               ))}
             </div>

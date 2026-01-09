@@ -19,19 +19,19 @@ export function Step7Decoration({ decoration, onDecorationChange, onNext }: Step
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
-      <div className="text-center space-y-3">
-        <h2 className="text-3xl font-bold text-gray-900">장식 방법 선택</h2>
-        <p className="text-lg text-gray-600">
+    <div className="max-w-4xl mx-auto space-y-4">
+      <div className="text-center space-y-2">
+        <h2 className="text-2xl font-bold text-gray-900">장식 방법 선택</h2>
+        <p className="text-base text-gray-600">
           이미지의 테두리와 공간을 장식할 스타일을 선택하세요
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
+      <div className="grid grid-cols-4 gap-2 mt-6">
         {DECORATIONS.map((decorationOption) => (
           <Card
             key={decorationOption.id}
-            className={`p-6 cursor-pointer transition-all hover:shadow-lg ${
+            className={`p-3 cursor-pointer transition-all hover:shadow-lg ${
               decoration === decorationOption.id
                 ? 'border-2 border-purple-500 bg-purple-50'
                 : 'border border-gray-200 hover:border-purple-300'
@@ -39,20 +39,20 @@ export function Step7Decoration({ decoration, onDecorationChange, onNext }: Step
             onClick={() => onDecorationChange(decorationOption.id)}
             onDoubleClick={() => handleDoubleClick(decorationOption.id)}
           >
-            <div className="flex items-start gap-4">
-              <div className="text-4xl flex-shrink-0">
+            <div className="text-center space-y-2">
+              <div className="text-3xl">
                 {decorationOption.icon}
               </div>
-              <div className="flex-1 space-y-2">
-                <h3 className="text-xl font-semibold text-gray-900">
+              <div className="space-y-1">
+                <h3 className="text-base font-semibold text-gray-900">
                   {decorationOption.name}
                 </h3>
-                <p className="text-sm text-gray-600">
+                <p className="text-xs text-gray-600">
                   {decorationOption.description}
                 </p>
               </div>
               {decoration === decorationOption.id && (
-                <div className="flex-shrink-0 text-purple-500 text-xl">✓</div>
+                <div className="text-purple-500 text-lg">✓</div>
               )}
             </div>
           </Card>
@@ -60,9 +60,9 @@ export function Step7Decoration({ decoration, onDecorationChange, onNext }: Step
       </div>
 
       {decoration && (
-        <div className="mt-6 p-4 bg-purple-50 border border-purple-200 rounded-lg">
-          <p className="text-sm text-purple-800">
-            <strong>선택된 장식:</strong>{' '}
+        <div className="mt-4 p-3 bg-purple-50 border border-purple-200 rounded-lg">
+          <p className="text-xs text-purple-800">
+            <strong>선택:</strong>{' '}
             {DECORATIONS.find((d) => d.id === decoration)?.name}
           </p>
         </div>
